@@ -22,8 +22,9 @@
     constructor: this,
     init: function(opt) {
       var config = {// 默认参数
-        el: 'body',
-        // date: "2018/3/1",//默认日期
+        el: '#dateEL',
+        inputEL: '#inputEL',
+        // date: "2018/3/11",//默认日期
         saleData: [],//数据
         type: 1,//日期组件类型
         anim: true,//是否开启动画
@@ -42,6 +43,7 @@
       };
       this.def = this.extend(config, opt, true);
       this.el = document.querySelector(this.def.el);
+      this.inputEL = document.querySelector(this.def.inputEL);
       this.curDate = this.def.date ? new Date(this.def.date) : new Date();
       this.year = this.currentYear = this.curDate.getFullYear();
       this.month = this.currentMonth = this.curDate.getMonth();
@@ -63,11 +65,15 @@
     },
     _init: function(def) {
       var isActive = '',
-        headercut = '';
+        headercut = '',
+        re = /([0-9]+\.[0-9]{2})[0-9]*/;
       this.def.monthLength = this.def.monthLength > 4 ? 4 : this.def.monthLength < 1 ? 1 : this.def.monthLength;
+      var width = 100 / this.def.monthLength + '';
+      width = width.replace(re, '$1');
       for (var i = 0; i < this.def.monthLength; i++) {
         isActive = i == 0 ? 'active' : '';
-        headercut += '<li class="'+ isActive +'" data-time="'+ this.currentYear + '-' + (this.currentMonth + 1 + i) +'" data-id="month'+i+'" style="width: '+ 100/this.def.monthLength +'%">' + '<span>' + this.formartMonth(this.currentYear, this.currentMonth + 1 + i, '年', '月') + '</span>' + '</li>'
+        headercut += '<li class="' + isActive + '" data-time="' + this.currentYear + '-' + (this.currentMonth + 1 + i) + '" data-id="month' + i + '" style="width: ' +
+        width + '%">' + '<span>' + this.formartMonth(this.currentYear, this.currentMonth + 1 + i, '年', '月') + '</span>' + '</li>'
       }
       var DPheader1 = '<ul class="schedule-hd">' + '<li><span>' + this.formartMonth(this.currentYear, this.currentMonth + 1, '年', '月') + "</span></li>" + "</ul>",
         DPheader2 = '<ul class="schedule-hd schedule-hd-more" id="schedule-hd">' + headercut + "</ul>",
@@ -108,7 +114,11 @@
         eleTemp = [],
         kuayue = false,
         starday = startWeek,
-        dayRow = parseInt((dayNow + starday) / 7);
+        dayRow = (dayNow + starday) / 7;
+      dayRow = isInteger(dayRow) ? parseInt(dayRow - 0.2) : parseInt(dayRow);
+        function isInteger(obj) {//判断是否为正整数
+          return (obj | 0) === obj
+         }
       //完全展示一个月
       if(this.def.showOneMonth) {
         for (var i = 0; i < 63; i++) {
@@ -190,6 +200,7 @@
             liNode.push(eleTemp[i]);//添加当日算起的一个月日期
           }
         }
+        console.log(liNode)
         document.getElementById("ul").innerHTML = liNode.join("");
         this.def.acrossMouthShow && this.acrossMouth(month,kuayueNum);// 跨月 显示下月月份
       }else {//分月展示
@@ -352,26 +363,46 @@
       clonedNode = countValue.cloneNode(true), // 克隆节点
       starX = countValue.getBoundingClientRect().left,
       starY = countValue.getBoundingClientRect().top,
-      cutData = document.getElementById("cutData"),
+      cutData = this.inputEL,//目标点
       endX = cutData.getBoundingClientRect().left,
       endY = cutData.getBoundingClientRect().top;
       clonedNode.setAttribute("id", "clone-node"); //添加ID
       countValue.parentNode.appendChild(clonedNode); // 在父节点插入克隆的节点
       clonedNode.style.left = starX + "px";
       clonedNode.style.top = starY + "px";
-      self.isAnimate = true;
-      $(clonedNode).animate({
-          left: endX + 50 + "px",
-          top: endY + 12 + "px",
-          width: "10px",
-          height: "8px"
-        },this.def.animTime,
+      this.isAnimate = true;
+      $(clonedNode).animate({ left: endX + 50, top: endY + 12, width: 10, height: 8},self.def.animTime,
         function() {
-          $(this).css({ display: "none" });
           self.isAnimate = false;
           countValue.parentNode.removeChild(clonedNode)
         }
       )
+    },
+    animate: function(obj, json, interval, sp, fn) {
+      clearInterval(obj.timer);
+      function getStyle(obj, arr) {
+        return obj.currentStyle ? obj.currentStyle[arr] : document.defaultView.getComputedStyle(obj, null)[arr]; 
+      }
+      obj.timer = setInterval(function(){
+          var flag = true;
+        for (var arr in json) {
+            var icur = arr == "opacity" ? Math.round(parseFloat(getStyle(obj, arr))*100) : icur = parseInt(getStyle(obj, arr));
+              var speed = (json[arr] - icur) * sp;
+              speed = speed > 0 ? Math.ceil(speed): Math.floor(speed);
+              icur != json[arr] && (flag = false);
+              if(arr == "opacity"){
+                  obj.style.filter = "alpha(opacity : '+(icur + speed)+' )";
+                  obj.style.opacity = (icur + speed)/100;
+              }else {
+                  obj.style[arr] = icur + speed + "px";
+              }
+          }
+  
+          if(flag){
+              clearInterval(obj.timer);
+              fn && fn();
+          }
+      },interval);
     }
   };
 

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="css/date-picker.css">
+    <style>
+        body, ul{
+            margin: 0;
+            padding: 0;
+        }
+        li{
+            list-style: none;
+        }
+        #inputEl{
+            width: 200px;
+        }
+    </style>
+    <title>Document</title>
+</head>
+<body>
+    <div style="width:420px;margin:40px auto;">
+        <div id="dateEL"></div>
+        <input id="inputEL" type="button">
+    </div>
+    <script src="https://cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script>
+    <script src="js/datePicker.js"></script>
+    <script>
+        var data = [{
+                data: '2018-03-10',
+                count: '300',
+                par: '188',
+                money: '98',
+                unit: 'kg'
+            },{
+                data: '2018-03-15',
+                count: '300',
+                par: '188',
+                money: '98',
+                unit: 'kg'
+            }]
+        var myDatePicker = new datePicker({
+            el: '#dateEL',
+            inputEl: '#inputEL',
+            saleData: data,
+            type: 1,//日期组件类型
+            anim: true,//是否开启动画
+            animTime: 800,//动画时长
+            acrossMouthShow: true,//是否显示跨月月份
+            tagShow: true,//是否显示标签
+            today: true,//是否显示当天日期为 今天
+            showOneMonth: false,//是否只展示一个月的内容
+            monthLength: 4,//可选月份数量 最大值4
+            tag: {//标签
+                orange: '热',
+                red: '少',
+                green: '多'
+            },
+            clickCb: function(t) {
+                document.getElementById('inputEL').value = t;
+            }
+        })
+    </script>
+</body>
+</html>
